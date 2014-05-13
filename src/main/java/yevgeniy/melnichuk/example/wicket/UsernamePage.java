@@ -7,6 +7,8 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.Model;
 
+import wicket.chat.service.FocusRequestBehavior;
+
 public class UsernamePage extends WebPage {
     private static final long serialVersionUID = 1L;
 
@@ -24,6 +26,7 @@ public class UsernamePage extends WebPage {
     public UsernamePage() {
         final Model<String> usernameModel = new Model<String>("");
         TextField<String> textField = new TextField<String>("username", usernameModel);
+        textField.add(new FocusRequestBehavior());
         Button button = new Button("submit") {
             private static final long serialVersionUID = 1L;
 

@@ -1,0 +1,11 @@
+<wicket:panel xmlns:wicket="http://wicket.apache.org">
+	<form wicket:id="form" class="form">
+		<input type="text" wicket:id="message"> <input type="submit"
+			value="send message" wicket:id="submit">
+	</form>
+	<div wicket:id="messages">
+		<p wicket:id="messageListView" class="message">
+			<span class="from" wicket:id="from"> </span><span wicket:id="text"></span>
+		</p>
+	</div>
+</wicket:panel>
