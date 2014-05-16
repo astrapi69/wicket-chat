@@ -13,17 +13,19 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
-import org.apache.wicket.markup.html.panel.GenericPanel;
+import org.apache.wicket.markup.html.panel.Panel;
 import org.apache.wicket.model.IModel;
-import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.util.time.Duration;
 
-public class ChatPanel extends GenericPanel<ChatModel> {
+import wicket.chat.service.FocusRequestBehavior;
+
+public class ChatPanel extends Panel {
     private static final long serialVersionUID = 1L;
 
-//    private static final int MAX_MESSAGES = 50;
-//    static private final LinkedList<ChatMessage> messages = new LinkedList<ChatMessage>();
+    private final int visibleMessages;
+    
+    private final LinkedList<ChatMessage> messages;
 
     private final Component messagesContainer;
     	/** The form. */
@@ -31,16 +33,28 @@ public class ChatPanel extends GenericPanel<ChatModel> {
 	
 	private final TextField<String> textField;
 	
+	private String currentMessage;
+	
+	public String getCurrentMessage() {
+		return currentMessage;
+	}
+
+	public TextField<String> getTextField() {
+		return textField;
+	}
+
+
 	private final Component submitButton;
-    
+	
 	public ChatPanel(String id, IModel<ChatModel> model) {
 		super(id, model);
-		
-		add(messagesContainer = newMessagesContainer("messages", model));
+		messages = model.getObject().getMessages();
+		this.visibleMessages = model.getObject().getVisibleMessages();
+		add(messagesContainer = newMessagesContainer("messages"));
         
         add(form = newChatForm("form", model));
-        
-		textField = newTextField("message", new Model<String>());
+        currentMessage = "";
+		textField = newTextField("message", new PropertyModel<String>(this, "currentMessage"));
 		
         submitButton = newSubmitButton("submit", model);        		
         
@@ -48,26 +62,28 @@ public class ChatPanel extends GenericPanel<ChatModel> {
         
 	}
 	
-	protected Component newSubmitButton(final String id, final IModel<ChatModel> model) {
+	protected Component newSubmitButton(String id, IModel<?> model) {
 		AjaxSubmitLink submitButton = new AjaxSubmitLink("submit") {
             private static final long serialVersionUID = 1L;
 
             @Override
             protected void onSubmit(AjaxRequestTarget target, Form<?> form) {
-                String username = getUsername();
+                String username = ChatSession.get().getUsername();
                 String text = textField.getModelObject();
 
                 ChatMessage chatMessage = new ChatMessage(username, text);
 
-                synchronized(model.getObject().getMessages()) {
-                    if (model.getObject().getMessages().size() >= model.getObject().getVisibleMessages()) {
-                    	model.getObject().getMessages().removeLast();
+                synchronized (messages) {
+                    if (messages.size() >= visibleMessages) {
+                        messages.removeLast();
                     }
-                    model.getObject().getMessages().addFirst(chatMessage);
+                    messages.addFirst(chatMessage);
                 }
-
+                textField.setDefaultModelObject("");
                 textField.setModelObject("");
-                target.add(messagesContainer, textField);
+                target.add(messagesContainer, getTextField(), form);
+
+        		textField.add(new FocusRequestBehavior(true));
             }
 
             @Override
@@ -77,26 +93,25 @@ public class ChatPanel extends GenericPanel<ChatModel> {
         };
         return submitButton;
 	}
-
-	protected String getUsername() {
-		return ChatSession.get().getUsername();
-	}
 	
-	protected TextField<String> newTextField(String id, final IModel<String> model) {
+	protected TextField<String> newTextField(String id, IModel<String> model) {
 		TextField<String> textField = new TextField<String>(id, model);
         textField.setOutputMarkupId(true);
+        textField.setOutputMarkupPlaceholderTag(true);
 		return textField;
 	}
 	
-	protected Form<?> newChatForm(String id, final IModel<?> model){
-		return new Form<String>(id);		
+	protected Form<?> newChatForm(String id, IModel<?> model){
+		Form<String> f = new Form<String>(id);
+		f.setOutputMarkupId(true);
+		return f;		
 	}
 	
 
-    protected Component newMessagesContainer(String id, final IModel<ChatModel> model) {
+    protected Component newMessagesContainer(String id) {
     	MarkupContainer messagesContainer = new WebMarkupContainer(id);
 
-        final ListView<ChatMessage> listView = new ListView<ChatMessage>("messageListView", model.getObject().getMessages()) {
+        final ListView<ChatMessage> listView = new ListView<ChatMessage>("messageListView", messages) {
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -116,7 +131,7 @@ public class ChatPanel extends GenericPanel<ChatModel> {
         messagesContainer.setOutputMarkupId(true);
         messagesContainer.add(listView);
 
-        AjaxSelfUpdatingTimerBehavior ajaxBehavior = new AjaxSelfUpdatingTimerBehavior(Duration.seconds(5));
+        AjaxSelfUpdatingTimerBehavior ajaxBehavior = new AjaxSelfUpdatingTimerBehavior(Duration.seconds(1));
         messagesContainer.add(ajaxBehavior);
 
         return messagesContainer;

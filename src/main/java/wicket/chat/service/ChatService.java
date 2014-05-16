@@ -1,9 +1,11 @@
-package yevgeniy.melnichuk.example.wicket;
+package wicket.chat.service;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+
+import yevgeniy.melnichuk.example.wicket.ChatModel;
 
 /**
  * The Class ChatService is holding all chat rooms in a map.
@@ -22,7 +24,7 @@ public class ChatService
 	 */
 	public IModel<ChatModel> getChatRoom(final String name)
 	{
-		IModel<ChatModel> room = chatroomsByName.get(name);
+		IModel<ChatModel> room = getRoom(name);
 		if (room == null)
 		{
 			ChatModel chatModel = new ChatModel();
@@ -31,5 +33,14 @@ public class ChatService
 			chatroomsByName.put(name, room);
 		}
 		return room;
+	}
+
+	private IModel<ChatModel> getRoom(final String name) {
+		IModel<ChatModel> room = chatroomsByName.get(name);
+		return room;
+	}
+	
+	public boolean exists(final String name) {
+		return chatroomsByName.containsKey(name);
 	}
 }

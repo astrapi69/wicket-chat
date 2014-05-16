@@ -1,6 +1,5 @@
 package wicket.chat.service;
 
-import yevgeniy.melnichuk.example.wicket.ChatService;
 
 
 public class ServiceLocator
