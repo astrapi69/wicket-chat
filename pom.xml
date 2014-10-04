@@ -13,7 +13,7 @@
 		<!-- WICKET version -->
 		<wicket.version>6.17.0</wicket.version>
 		<!-- JETTY version -->
-		<jetty.version>8.1.12.v20130726</jetty.version>
+		<jetty.version>8.1.14.v20131031</jetty.version>
 		<!-- LOGGING versions -->
 		<slf4j.version>1.6.4</slf4j.version>
 		<log4j.version>1.2.16</log4j.version>
@@ -70,6 +70,7 @@
 				<artifactId>jetty-webapp</artifactId>
 				<version>${jetty.version}</version>
 			</dependency>
+			
 		</dependencies>
 
 	</dependencyManagement>
